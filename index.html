@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StyleSheet Affiliate Pro - Deployment Notice</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif;background:#0b1020;color:#e6edf3;margin:0}
+    .wrap{max-width:760px;margin:40px auto;padding:24px}
+    .card{background:#111a2e;border:1px solid #2a3657;border-radius:16px;padding:24px}
+    h1{margin-top:0;font-size:2rem}
+    .tag{display:inline-block;background:#1f6feb;color:#fff;padding:4px 10px;border-radius:999px;font-size:.8rem}
+    code{background:#1f2937;padding:2px 6px;border-radius:6px}
+    a{color:#79c0ff}
+    ul{line-height:1.6}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <span class="tag">Important</span>
+      <h1>StyleSheet Affiliate Pro needs PHP + MySQL hosting</h1>
+      <p>
+        You are currently viewing this repository on <strong>GitHub Pages</strong> (<code>*.github.io</code>),
+        which only serves static files and cannot run <code>.php</code> code or MySQL.
+      </p>
+      <p>To run the full app, deploy this project to a PHP server (XAMPP/cPanel/EC2/Lightsail/ECS).</p>
+
+      <h2>Quick run steps</h2>
+      <ul>
+        <li>Copy <code>stylesheet_pro/</code> to your PHP host document root.</li>
+        <li>Create MySQL access for <code>127.0.0.1 / root / root</code> (or update config).</li>
+        <li>Open <code>/stylesheet_pro/install.php</code> once to set up schema and sample data.</li>
+        <li>Browse <code>/stylesheet_pro/index.php</code> and <code>/stylesheet_pro/admin/login.php</code>.</li>
+      </ul>
+
+      <p>Repository docs are available in <a href="./docs/DEPLOYMENT.md">docs/DEPLOYMENT.md</a>.</p>
+    </div>
+  </main>
+</body>
+</html>
