@@ -1,0 +1,90 @@
+name: CI + ECS Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  php-lint:
+    name: PHP lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Lint all PHP files
+        run: |
+          set -euo pipefail
+          find stylesheet_pro -type f -name "*.php" -print0 | xargs -0 -I{} php -l "{}"
+
+  deploy-production:
+    name: Deploy
+    needs: php-lint
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate deployment configuration
+        id: cfg
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION != '' && vars.AWS_REGION || secrets.AWS_REGION }}
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+          ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${AWS_REGION:-}" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping deploy: AWS_REGION is not configured. Set repository/environment variable AWS_REGION (for example us-east-1)."
+            exit 0
+          fi
+
+          if [ "$AWS_REGION" = "MY_AWS_REGION" ]; then
+            echo "::error::AWS_REGION is still set to placeholder value MY_AWS_REGION. Replace it with a real region, e.g. us-east-1."
+            exit 1
+          fi
+
+          if ! echo "$AWS_REGION" | grep -Eq '^[a-z]{2}-[a-z]+-[0-9]+$'; then
+            echo "::error::AWS_REGION is invalid: $AWS_REGION"
+            exit 1
+          fi
+
+          missing=""
+          [ -z "${ECS_CLUSTER:-}" ] && missing="$missing ECS_CLUSTER"
+          [ -z "${ECS_SERVICE:-}" ] && missing="$missing ECS_SERVICE"
+          [ -z "${ECS_TASK_DEFINITION:-}" ] && missing="$missing ECS_TASK_DEFINITION"
+
+          if [ -n "$missing" ]; then
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Skipping deploy: missing required vars:$missing"
+            exit 0
+          fi
+
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        if: steps.cfg.outputs.should_deploy == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION != '' && vars.AWS_REGION || secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Deploy status
+        if: steps.cfg.outputs.should_deploy == 'true'
+        run: |
+          echo "Deployment configuration is valid."
+          echo "Add your ECS update commands here if you want automatic rollout."
