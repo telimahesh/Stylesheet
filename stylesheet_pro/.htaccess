@@ -1,0 +1,12 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Friendly URLs
+RewriteRule ^product/([0-9]+)$ product.php?id=$1 [L,QSA]
+RewriteRule ^category/([0-9]+)$ category.php?category=$1 [L,QSA]
+
+# Protect sensitive files
+<FilesMatch "^(\.htaccess|config\.php)$">
+    Require all denied
+</FilesMatch>
